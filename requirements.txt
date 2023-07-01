@@ -1,1 +1,6 @@
 pytravisci
+streamlit
+statsmodels
+pandas
+seaborn
+matplotlib

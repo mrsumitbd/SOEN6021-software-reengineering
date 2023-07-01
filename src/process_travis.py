@@ -14,6 +14,9 @@ class ProcessTravisCIBuilds:
         repo = self.travis.get_repository(repo_name)
         repo.create_request(f"Build request created for {repo_name}, {branch} branch.", branch)
 
+    def get_build_info(self, build_id):
+        return self.travis.get_build(build_id).state
+
     def get_build_details(self, repo_link, latest_n):
         '''
         :param repo_link: user_name/repo
@@ -25,14 +28,35 @@ class ProcessTravisCIBuilds:
             repository = self.travis.get_repository(repo_link)
             builds = repository.get_builds(params={"limit": latest_n})
             for build in builds:
-                build_dict[build.id] = {"job_list" : [job.id for job in build.jobs], "status" : build.state}
+                build_dict[build.id] = {"job_list": [job.id for job in build.jobs], "status": build.state}
             return build_dict
         except:
             return "Nothing found."
 
     def get_job_details(self, job_id):
         job = self.travis.get_job(job_id)
-        return {"status" : job.state, "log" : f"{job.get_log().content}"}
+        if str(job.number)[-2:] == ".1":
+            job_config_str = "Linux-Xenial_3.8_amd64"
+        elif str(job.number)[-2:] == ".2":
+            job_config_str = 'Linux-Xenial_3.6_amd64'
+        elif str(job.number)[-2:] == ".3":
+            job_config_str = 'Linux-Xenial_3.7_amd64'
+        elif str(job.number)[-2:] == ".4":
+            job_config_str = 'Linux-Bionic_3.7_amd64'
+        elif str(job.number)[-2:] == ".5":
+            job_config_str = 'Linux-Focal_3.7_amd64'
+        elif str(job.number)[-2:] == ".6":
+            job_config_str = 'Linux-Xenial_3.7_arm64'
+        elif str(job.number)[-2:] == ".7":
+            job_config_str = 'Linux-Xenial_3.7_arm64-gravitation2'
+        elif str(job.number)[-2:] == ".8":
+            job_config_str = 'MacOS_3.7_amd64'
+        elif str(job.number)[-2:] == ".9":
+            job_config_str = 'Windows_3.7_amd64'
+        else:
+            raise ValueError("Invalid Configuration!")
+
+        return {"job_config": job_config_str, "status": job.state, "log": f"{job.get_log().content}"}
 
     def list_repos(self):
         repos = self.travis.get_repositories()
