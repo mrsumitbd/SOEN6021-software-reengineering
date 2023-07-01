@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 from statsmodels.formula.api import ols
 from statsmodels.stats.anova import anova_lm
 
@@ -105,7 +106,10 @@ def perform_stat_analysis(proj_df):
 
 
 def main():
-    df = pd.read_json(f'../../sample_processed_data/sample.json.gz', lines=True, compression='gzip')
+    sample_data_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..','sample_processed_data', 'sample.json.gz'))
+    print(sample_data_path)
+    df = pd.read_json(sample_data_path, lines=True, compression='gzip')
+
 
     df['Python'] = df['Python'].astype(str)
 
