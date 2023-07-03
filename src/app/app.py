@@ -105,7 +105,7 @@ def perform_stat_analysis(proj_df):
     return combined_model
 
 
-@st.cache
+@st.cache_data
 def convert_df(df):
     # IMPORTANT: Cache the conversion to prevent computation on every rerun
 
