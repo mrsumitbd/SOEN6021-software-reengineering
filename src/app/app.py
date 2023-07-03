@@ -105,6 +105,13 @@ def perform_stat_analysis(proj_df):
     return combined_model
 
 
+@st.cache
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+
+    return df.to_csv().encode('utf-8')
+
+
 def main():
     sample_data_path = os.path.realpath(
         os.path.join(os.path.dirname(__file__), '..', '..', 'sample_processed_data', 'sample.json.gz'))
@@ -123,6 +130,9 @@ def main():
 
     st.write(f"Raw data for project {project}")
     st.dataframe(proj_df.reset_index(), use_container_width=True, hide_index=True)
+
+    st.download_button(label="Download data as CSV", data=convert_df(proj_df), file_name=f'{project}_df.csv',
+                       mime='text/csv')
 
     st.write(f"Distribution of scores for different configuration variables:\n")
     # generate boxplot
