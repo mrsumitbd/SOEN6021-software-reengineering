@@ -106,10 +106,10 @@ def perform_stat_analysis(proj_df):
 
 
 def main():
-    sample_data_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..','sample_processed_data', 'sample.json.gz'))
+    sample_data_path = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), '..', '..', 'sample_processed_data', 'sample.json.gz'))
     print(sample_data_path)
     df = pd.read_json(sample_data_path, lines=True, compression='gzip')
-
 
     df['Python'] = df['Python'].astype(str)
 
@@ -122,8 +122,7 @@ def main():
     proj_df = df.loc[df['Project'] == project]
 
     st.write(f"Raw data for project {project}")
-    display_df = proj_df.reset_index()
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
+    st.dataframe(proj_df.reset_index(), use_container_width=True, hide_index=True)
 
     st.write(f"Distribution of scores for different configuration variables:\n")
     # generate boxplot
@@ -135,6 +134,7 @@ def main():
 
     st.write(combined_model.summary())
     st.write(anova_lm(combined_model))
+
 
 if __name__ == '__main__':
     main()
