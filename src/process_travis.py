@@ -1,4 +1,5 @@
 from PyTravisCI import TravisCI, defaults
+import time, datetime
 
 
 class ProcessTravisCIBuilds:
@@ -47,16 +48,22 @@ class ProcessTravisCIBuilds:
             job_config_str = 'Linux-Focal_3.7_amd64'
         elif str(job.number)[-2:] == ".6":
             job_config_str = 'Linux-Xenial_3.7_arm64'
+        # elif str(job.number)[-2:] == ".7":
+        #     job_config_str = 'Linux-Xenial_3.7_s390x'
         elif str(job.number)[-2:] == ".7":
-            job_config_str = 'Linux-Xenial_3.7_arm64-gravitation2'
-        elif str(job.number)[-2:] == ".8":
             job_config_str = 'MacOS_3.7_amd64'
-        elif str(job.number)[-2:] == ".9":
+        elif str(job.number)[-2:] == ".8":
             job_config_str = 'Windows_3.7_amd64'
         else:
             raise ValueError("Invalid Configuration!")
+        # print(job)
+        processing_time = ((job.finished_at - job.started_at).total_seconds())
+        return {"job_config": job_config_str, "status": job.state, "log": f"{job.get_log().content}",
+                "processing_time": processing_time}
 
-        return {"job_config": job_config_str, "status": job.state, "log": f"{job.get_log().content}"}
+    def restart_job(self, job_id):
+        job = self.travis.get_job(job_id)
+        job.restart()
 
     def list_repos(self):
         repos = self.travis.get_repositories()

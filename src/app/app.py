@@ -2,9 +2,13 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
+import os, sys
 from statsmodels.formula.api import ols
 from statsmodels.stats.anova import anova_lm
+util_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if util_path not in sys.path:
+    sys.path.append(util_path)
+from utility import *
 
 
 def make_boxplot(sub_df_list, title, fig):
@@ -71,7 +75,7 @@ def create_sub_dfs(proj_df):
     sub_df_hw = proj_df.loc[((proj_df['OS'] == 'Linux-Xenial') &
                              (proj_df['Python'] == '3.7') &
                              (proj_df['Hardware'] == 'amd64')) |
-                            (proj_df['Hardware'] == 'arm64-gravitation2') |
+                            # (proj_df['Hardware'] == 's390x') |
                             (proj_df['Hardware'] == 'arm64')]
 
     ### Python Versions
@@ -89,7 +93,7 @@ def create_sub_dfs(proj_df):
     return [sub_df_os, sub_df_dist, sub_df_hw, sub_df_py]
 
 
-def perform_stat_analysis(proj_df):
+def perform_stat_analysis(proj_df, return_combined = True):
     combined_model = ols("Score ~ C(OS) + C(Hardware) + C(Python)", proj_df).fit()
 
     sub_df_os, sub_df_dist, sub_df_hw, sub_df_py = create_sub_dfs(proj_df)
@@ -102,7 +106,10 @@ def perform_stat_analysis(proj_df):
 
     py_model = ols("Score ~ C(Python)", sub_df_py).fit()
 
-    return combined_model
+    if return_combined:
+        return combined_model
+    else:
+        return (os_model, dist_model, hw_model, py_model)
 
 
 @st.cache_data
@@ -113,12 +120,20 @@ def convert_df(df):
 
 
 def main():
-    sample_data_path = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), '..', '..', 'sample_processed_data', 'sample.json.gz'))
-    print(sample_data_path)
-    df = pd.read_json(sample_data_path, lines=True, compression='gzip')
+    if sys.argv[1] == 'sample':
+        sample_data_path = os.path.realpath(
+            os.path.join(os.path.dirname(__file__), '..', '..', 'sample_processed_data', 'sample.json.gz'))
+        df = pd.read_json(sample_data_path, lines=True, compression='gzip')
+    else:
+        df_list = []
+        data_folder_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', 'output'))
+        for file in list_files(data_folder_path, all=False, extension = 'csv'):
+            tmp_df = pd.read_csv(f'{data_folder_path}/{file}')
+            df_list.append(tmp_df)
+        df = pd.concat(df_list, ignore_index = True)
 
     df['Python'] = df['Python'].astype(str)
+    df.round({'Score': 2})
 
     proj_list = df['Project'].unique().tolist()
 
