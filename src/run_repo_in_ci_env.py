@@ -63,18 +63,18 @@ class RunRepoInCIEnv:
 
 if __name__ == '__main__':
     project_name = sys.argv[1]
-    number_of_runs = sys.argv[2]
+    number_of_runs = sys.argv[3]
     print(f"Processing project: {project_name}. Running the project {number_of_runs} time(s).")
 
     run_obj = RunRepoInCIEnv("WMlSAymr_DTc5XHe5mCj4w")
     df = pd.DataFrame(
-        run_obj.process_logs(run_obj.build_n_times(int(number_of_runs), f'notthatanonymous/{project_name}')),
+        run_obj.process_logs(run_obj.build_n_times(int(number_of_runs), f'notthatanonymous/{project_name}', branch=sys.argv[2])),
         columns=['OS', 'Python', 'Hardware', 'Run', 'Score', 'Processing_Time'])
     df["Project"] = [project_name] * df.shape[0]
 
     del run_obj
 
-    if sys.argv[3] == 'create_new':
+    if sys.argv[4] == 'create_new':
         write_df(df=df, file_name=f'{project_name}.csv')
     else:
         write_df(df=df, file_name=f'{project_name}.csv', overwrite_if_existing=False)
