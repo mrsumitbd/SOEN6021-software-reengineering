@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from os import listdir
 from os.path import isfile, join
+from scipy import stats
 
 
 def write_df(df, file_name, overwrite_if_existing=True):
@@ -26,3 +27,12 @@ def list_files(folder_path, all=True, extension=None):
             raise ValueError("Extension cannot be None if only a fixed type of files are to be listed.")
         else:
             return [f for f in listdir(folder_path) if (isfile(join(folder_path, f)) and f.endswith(f".{extension}"))]
+
+
+def calculate_pct_diff(v1, v2):
+    return ((v2 - v1) / abs(v1)) * 100
+
+
+def extract_p_value(trt, ctrl):
+    p_value = stats.ttest_ind(trt, ctrl).pvalue
+    return p_value #float(str(stats.ttest_ind(trt, ctrl)).split('pvalue=')[1].split(')')[0])
