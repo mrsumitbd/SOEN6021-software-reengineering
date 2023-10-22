@@ -1,4 +1,4 @@
-import sys, time, os
+import sys, re
 import numpy as np
 import pandas as pd
 from utility import *
@@ -46,7 +46,8 @@ class RunRepoInCIEnv:
                 for job_id in build_list[build_id]['job_list']:
                     job_details = self.process_Travis.get_job_details(job_id)
                     try:
-                        score = job_details['log'].split("\nScore: ")[1].split("\n")[0]
+                        # score = job_details['log'].split("\nScore: ")[1].split("\n")[0]
+                        score = re.findall(r"^best score:(\d+\.\d+)\s", job_details['log'], re.MULTILINE)[0]
                     except:
                         score = np.nan
                     data_list.append(list(np.append(job_details['job_config'].split('_'),
