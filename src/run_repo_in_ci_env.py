@@ -47,7 +47,7 @@ class RunRepoInCIEnv:
                     job_details = self.process_Travis.get_job_details(job_id)
                     try:
                         # score = job_details['log'].split("\nScore: ")[1].split("\n")[0]
-                        score = re.findall(r"^best score:(\d+\.\d+)\s", job_details['log'], re.MULTILINE)[0]
+                        score = re.findall(r"^Score:\s(\d+\.\d+)\s", job_details['log'], re.MULTILINE)[0]
                     except:
                         score = np.nan
                     data_list.append(list(np.append(job_details['job_config'].split('_'),
