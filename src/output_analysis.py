@@ -224,6 +224,68 @@ def generate_summary_report(sig_dict):
         print(f"{sig_combined['arm64'].count(1)} out of {len(sig_combined['arm64'])} or {round(100 * np.mean(sig_combined['arm64']), 2)}% projects show a statistically significant difference between amd64 and arm64.\n")
 
 
+def generate_report_df(full_df):
+    df_row_list = []
+    for project in full_df['Project'].unique():
+        proj_df = full_df.loc[df['Project']==project]
+        for metric in ["Score", "Processing_Time", "Expense"]:
+            sub_df_os = proj_df.loc[((proj_df['OS'] == 'Linux-Xenial') &
+                                         (proj_df['Python'] == '3.7') &
+                                         (proj_df['Hardware'] == 'amd64')) |
+                                        (proj_df['OS'] == 'MacOS') |
+                                        (proj_df['OS'] == 'Windows')]
+
+            comp_df_OS = pd.DataFrame(sub_df_os.groupby('OS')[metric].mean())
+
+            #calculate_pct_diff(comp_df_OS.loc['Linux-Xenial'][0], comp_df_OS.loc['MacOS'][0]),
+            #calculate_pct_diff(comp_df_OS.loc['Linux-Xenial'][0], comp_df_OS.loc['Windows'][0])
+
+            sub_df_dist = proj_df.loc[((proj_df['OS'] == 'Linux-Xenial') &
+                                   (proj_df['Python'] == '3.7') &
+                                   (proj_df['Hardware'] == 'amd64')) |
+                                  (proj_df['OS'] == 'Linux-Bionic') |
+                                  (proj_df['OS'] == 'Linux-Focal')]
+
+            comp_df_dist = pd.DataFrame(sub_df_dist.groupby('OS')[metric].mean())
+
+
+            # calculate_pct_diff(comp_df_dist.loc['Linux-Xenial'][0], comp_df_dist.loc['Linux-Bionic'][0]),
+            # calculate_pct_diff(comp_df_dist.loc['Linux-Xenial'][0], comp_df_dist.loc['Linux-Focal'][0]),
+
+
+            sub_df_hw = proj_df.loc[((proj_df['OS'] == 'Linux-Xenial') &
+                                 (proj_df['Python'] == '3.7') &
+                                 (proj_df['Hardware'] == 'amd64')) |
+                                (proj_df['Hardware'] == 'arm64')]
+
+            comp_df_hw = pd.DataFrame(sub_df_hw.groupby('Hardware')[metric].mean())
+
+            # calculate_pct_diff(comp_df_hw.loc['amd64'][0], comp_df_hw.loc['arm64'][0])
+
+            sub_df_py = proj_df.loc[((proj_df['OS'] == 'Linux-Xenial') &
+                                 (proj_df['Python'] == '3.7') &
+                                 (proj_df['Hardware'] == 'amd64')) |
+                                (proj_df['Python'] == '3.8') |
+                                (proj_df['Python'] == '3.6')]
+
+            comp_df_py = pd.DataFrame(sub_df_py.groupby('Python')[metric].mean())
+
+            # calculate_pct_diff(comp_df_py.loc['3.7'][0], comp_df_py.loc['3.6'][0]),
+            # calculate_pct_diff(comp_df_py.loc['3.7'][0], comp_df_py.loc['3.8'][0])
+
+            df_row_list.append([project, metric,
+                                calculate_pct_diff(comp_df_OS.loc['Linux-Xenial'][0], comp_df_OS.loc['MacOS'][0]),
+                                calculate_pct_diff(comp_df_OS.loc['Linux-Xenial'][0], comp_df_OS.loc['Windows'][0]),
+                                calculate_pct_diff(comp_df_dist.loc['Linux-Xenial'][0], comp_df_dist.loc['Linux-Bionic'][0]),
+                                calculate_pct_diff(comp_df_dist.loc['Linux-Xenial'][0], comp_df_dist.loc['Linux-Focal'][0]),
+                                calculate_pct_diff(comp_df_hw.loc['amd64'][0], comp_df_hw.loc['arm64'][0]),
+                                calculate_pct_diff(comp_df_py.loc['3.7'][0], comp_df_py.loc['3.6'][0]),
+                                calculate_pct_diff(comp_df_py.loc['3.7'][0], comp_df_py.loc['3.8'][0])
+                                ])
+
+    pd.DataFrame(df_row_list, columns=['Project', 'Metric', 'os_mac', 'os_windows', 'dist_bionic', 'dist_focal',
+                                       'hw_arm64', 'py_3_6', 'py_3_8']).to_csv('analysis_report/analysis_report.csv')
+
 if __name__ == '__main__':
     # following code combines all projects into one dataframe
     df_list = []
@@ -318,3 +380,6 @@ if __name__ == '__main__':
 
     sig_combined = combine_sig_result(df, "Hardware", "Expense")
     generate_summary_report(sig_combined)
+
+
+    generate_report_df(df)
