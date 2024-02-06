@@ -33,6 +33,9 @@ def calculate_pct_diff(v1, v2):
     return ((v2 - v1) / abs(v1)) * 100
 
 
-def extract_p_value(trt, ctrl):
-    p_value = stats.ttest_ind(trt, ctrl).pvalue
+def extract_p_value(trt, ctrl, ttest = False):
+    if ttest: # perform two-sample t-test. normality is assumed
+        p_value = stats.ttest_ind(trt, ctrl).pvalue
+    else:
+        p_value = stats.mannwhitneyu(trt, ctrl).pvalue
     return p_value #float(str(stats.ttest_ind(trt, ctrl)).split('pvalue=')[1].split(')')[0])
